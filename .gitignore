@@ -1,0 +1,10 @@
+.handoff
+node_modules/
+dist/
+coverage/
+.cache/
+.vite/
+.vitest/
+*.tsbuildinfo
+*.log
+.DS_Store

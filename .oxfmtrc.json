@@ -1,0 +1,13 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "ignorePatterns": [
+    ".handoff/**",
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/coverage/**",
+    "**/.cache/**",
+    "**/.vite/**",
+    "**/.vitest/**",
+    "pnpm-lock.yaml"
+  ]
+}

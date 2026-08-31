@@ -1,0 +1,30 @@
+{
+  "name": "dsh-tempera",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "pnpm -r run build",
+    "typecheck": "tsc --noEmit && pnpm -r run typecheck",
+    "lint": "oxlint .",
+    "lint:fix": "oxlint --fix .",
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check:exports": "pnpm -r run check:exports",
+    "check": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test && pnpm build && pnpm check:exports"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.0",
+    "oxfmt": "^0.65.0",
+    "oxlint": "^1.76.0",
+    "tsdown": "^0.22.2",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.8"
+  },
+  "engines": {
+    "node": "^22.19.0 || >=24.0.0"
+  },
+  "packageManager": "pnpm@9.15.4"
+}
