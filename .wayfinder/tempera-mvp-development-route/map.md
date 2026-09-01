@@ -32,10 +32,10 @@ The map plans the work; it does not implement the product.
 - [Choose the first transactional persistence boundary](tickets/004-choose-transactional-persistence-boundary.md): use an exclusively owned `better-sqlite3` authority store whose pure decision transaction atomically binds versioned Task snapshots, ordered authority commits, and durable idempotency receipts behind a runtime port.
 - [Fix the MVP host command and query contract](tickets/005-fix-host-command-query-contract.md): expose four named Host commands over manager-wide idempotency and Task CAS, keep runtime authority transitions internal, and provide three read-only version-reporting queries without a generic Domain-command escape hatch.
 - [Freeze the coding-default policy snapshot and continuation rules](tickets/006-freeze-coding-default-policy.md): use one closed versioned interpreter with fixed retry/repair/effect budgets, order-independent exact-Candidate two-Review eligibility, stable continuations, fail-closed apply authority, and completion only from a confirmed Operation.
+- [Specify the authoritative transaction and recovery protocol](tickets/009-specify-transaction-recovery-protocol.md): separate authority and snapshot clocks, persist provider grants before calls, recover from current snapshots through stable receipts and fencing, and reconcile crossed Operations without speculative redispatch or terminal Task reopening.
 
 ## Not yet specified
 
-- The minimum operational projection and inspection surface needed to make every durable waiting, conflict, stale-result, and reconciliation state explainable. This becomes specifiable after the command/query boundary and recovery protocol are fixed.
 - The concrete first realizer/provider composition used by the golden path. This becomes specifiable after current DSH capabilities and DSH-native service boundaries are known.
 - The exact repository/package layout for adapters, plugins, fixtures, and conformance tests. This becomes specifiable after their contracts and reuse boundaries are decided.
 

@@ -48,6 +48,10 @@ _Avoid_: Executor success, Approval
 Permission to dispatch an already-prepared authoritative Operation.
 _Avoid_: Execution authority
 
+**Dispatch grant**:
+One durable exercise of effect authority for an exact Operation; it consumes dispatch budget before provider delivery and does not prove the effect occurred.
+_Avoid_: Provider call, effect confirmation
+
 **AuthorityScope**:
 The finite capability boundary frozen for a Task and only narrowed downstream.
 _Avoid_: Full IAM policy, provider permissions
