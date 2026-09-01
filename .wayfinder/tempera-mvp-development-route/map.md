@@ -27,6 +27,7 @@ The map plans the work; it does not implement the product.
 
 - [Audit current DSH capabilities against Tempera's MVP seams](tickets/001-audit-current-dsh-capabilities.md): reuse DSH for Cordis composition and execution, while Tempera owns the authority transaction and adds narrow realizer, artifact, Git/workspace, and effect-reconciliation seams.
 - [Extract durable-task lessons from qoder-agent-bridge](tickets/002-extract-qoder-bridge-lessons.md): preserve exact-Candidate identity, immutable history, retry/repair separation, exact apply, and fail-closed tests, but replace provider-specific APIs and file-lock coordination with idempotency, Task CAS, fencing, write-ahead Operations, and reconciliation.
+- [Freeze the implementable Task Domain v1 schema](tickets/003-freeze-task-domain-v1-schema.md): freeze seven provider-neutral immutable entities, a four-value Task lifecycle and Review disposition, five-state Operation coordination, scoped pure Domain commands, generation fencing, and exact-Candidate authority invariants.
 
 ## Not yet specified
 
