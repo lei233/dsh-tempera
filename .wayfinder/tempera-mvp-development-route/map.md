@@ -30,6 +30,7 @@ The map plans the work; it does not implement the product.
 - [Extract durable-task lessons from qoder-agent-bridge](tickets/002-extract-qoder-bridge-lessons.md): preserve exact-Candidate identity, immutable history, retry/repair separation, exact apply, and fail-closed tests, but replace provider-specific APIs and file-lock coordination with idempotency, Task CAS, fencing, write-ahead Operations, and reconciliation.
 - [Freeze the implementable Task Domain v1 schema](tickets/003-freeze-task-domain-v1-schema.md): freeze seven provider-neutral immutable entities, a four-value Task lifecycle and Review disposition, five-state Operation coordination, scoped pure Domain commands, generation fencing, and exact-Candidate authority invariants.
 - [Choose the first transactional persistence boundary](tickets/004-choose-transactional-persistence-boundary.md): use an exclusively owned `better-sqlite3` authority store whose pure decision transaction atomically binds versioned Task snapshots, ordered authority commits, and durable idempotency receipts behind a runtime port.
+- [Fix the MVP host command and query contract](tickets/005-fix-host-command-query-contract.md): expose four named Host commands over manager-wide idempotency and Task CAS, keep runtime authority transitions internal, and provide three read-only version-reporting queries without a generic Domain-command escape hatch.
 
 ## Not yet specified
 
