@@ -98,6 +98,11 @@ Formatting excludes local handoff material, dependencies, generated output,
 caches, coverage files, and the generated lockfile. EditorConfig standardizes
 UTF-8, LF, two-space indentation, and a final newline. No Git hooks are installed.
 
+## Development guidelines
+
+All commits must follow
+[Conventional Commits 1.0.0](https://www.conventionalcommits.org/en/v1.0.0/).
+
 ## Continuous integration
 
 GitHub Actions runs on pushes and pull requests using Ubuntu, Node.js 22.23.1,

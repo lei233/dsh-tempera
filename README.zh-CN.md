@@ -88,6 +88,11 @@ Vitest 已配置，但**目前没有测试文件**。后续测试从 `packages/*
 格式化排除本地交接资料、依赖、生成文件、缓存、覆盖率文件及生成的锁文件。
 EditorConfig 统一 UTF-8、LF、2 空格缩进和文件末尾换行，不安装 Git hooks。
 
+## 开发规范
+
+所有提交必须遵循
+[Conventional Commits 1.0.0](https://www.conventionalcommits.org/en/v1.0.0/)。
+
 ## 持续集成
 
 GitHub Actions 在 push 和 pull request 时触发，使用 Ubuntu、Node.js 22.23.1、
