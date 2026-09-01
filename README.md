@@ -24,7 +24,7 @@ for publication.
 packages/
   domain/       @dsh-tempera/domain — reserved for Task semantics and invariants
   runtime/      @dsh-tempera/runtime — reserved for Task Manager coordination
-docs/           Reserved for future documentation; currently only .gitkeep
+docs/           Architecture and domain design documentation
 ```
 
 All packages are private and versioned `0.0.0`. They currently have no dependencies
@@ -32,6 +32,21 @@ on each other. The future dependency direction may be `runtime → domain`, neve
 `domain → runtime`. The domain must remain independent of DSH, concrete providers,
 storage backends, and Node.js globals; its TypeScript configuration does not
 automatically include Node.js types.
+
+## Architecture
+
+The current implementation baseline is documented in:
+
+- [Architecture overview](docs/architecture.md)
+- [Domain model](docs/domain.md)
+- [Lifecycle and continuation](docs/lifecycle.md)
+- [Durability and recovery](docs/durability.md)
+- [DSH capability seams](docs/capability-seams.md)
+- [MVP scope](docs/mvp.md)
+
+The central boundary is: **Task Domain is the product core; DSH is the Harness kernel.**
+Tempera owns durable work lifecycle and authority, while DSH-native services and
+providers supply execution, artifact, workspace, and effect capabilities.
 
 ## Development environment
 
