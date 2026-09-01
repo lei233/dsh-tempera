@@ -40,6 +40,10 @@ _Avoid_: Approval
 Permission to make an exact Candidate authoritative under policy.
 _Avoid_: Executor success
 
+**Proposal acceptance**:
+The authoritative decision that commits the current Invocation's proposed outcome as a Stage completion. It is distinct from Invocation success and from Approval.
+_Avoid_: Executor success, Approval
+
 **Effect authority**:
 Permission to dispatch an already-prepared authoritative Operation.
 _Avoid_: Execution authority
@@ -51,6 +55,10 @@ _Avoid_: Full IAM policy, provider permissions
 **Retry**:
 A new Invocation attempting the same semantic Stage.
 _Avoid_: Repair, provider-internal retry
+
+**Generation fencing**:
+The authority rule that only the current Invocation generation may commit a Stage outcome; older attempts remain non-authoritative history.
+_Avoid_: Process cancellation, provider cancellation
 
 **Repair**:
 A new Stage representing changed semantic work, potentially producing a new Candidate derived from an earlier one.

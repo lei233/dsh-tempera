@@ -7,14 +7,9 @@ This document describes durable lifecycle, continuation authority, retry/repair 
 ```mermaid
 stateDiagram-v2
   [*] --> active
-  active --> suspended: optional v1 capability
-  suspended --> active
   active --> completed
   active --> failed
   active --> cancelled
-  suspended --> completed
-  suspended --> failed
-  suspended --> cancelled
 
   completed --> [*]
   failed --> [*]

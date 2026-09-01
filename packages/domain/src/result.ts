@@ -1,0 +1,71 @@
+import type { TaskAggregate } from "./types";
+
+export type DomainRejectionCode =
+  | "TASK_NOT_ACTIVE"
+  | "TASK_ALREADY_TERMINAL"
+  | "STAGE_NOT_FOUND"
+  | "STAGE_ALREADY_EXISTS"
+  | "STAGE_MATERIALIZATION_KEY_DUPLICATE"
+  | "STAGE_NOT_MATERIALIZABLE"
+  | "STAGE_ROLE_MISMATCH"
+  | "STAGE_ALREADY_COMPLETED"
+  | "STAGE_NOT_ACTIVE"
+  | "ENTITY_TASK_MISMATCH"
+  | "INVOCATION_NOT_FOUND"
+  | "INVOCATION_ALREADY_EXISTS"
+  | "INVOCATION_STAGE_MISMATCH"
+  | "INVOCATION_STATE_INVALID"
+  | "INVOCATION_GENERATION_STALE"
+  | "INVOCATION_PROPOSAL_ALREADY_RESOLVED"
+  | "INVOCATION_PROPOSAL_MISSING"
+  | "INVOCATION_PROPOSAL_MISMATCH"
+  | "CANDIDATE_NOT_FOUND"
+  | "CANDIDATE_ALREADY_EXISTS"
+  | "CANDIDATE_TASK_MISMATCH"
+  | "CANDIDATE_SCOPE_NOT_AUTHORIZED"
+  | "REVIEW_NOT_FOUND"
+  | "REVIEW_ALREADY_EXISTS"
+  | "REVIEW_TASK_MISMATCH"
+  | "REVIEW_STAGE_MISMATCH"
+  | "REVIEW_CANDIDATE_MISMATCH"
+  | "REVIEW_EVIDENCE_INVALID"
+  | "REVIEW_PROVENANCE_INVALID"
+  | "APPROVAL_NOT_FOUND"
+  | "APPROVAL_ALREADY_EXISTS"
+  | "APPROVAL_TASK_MISMATCH"
+  | "APPROVAL_CANDIDATE_MISMATCH"
+  | "APPROVAL_POLICY_MISMATCH"
+  | "APPROVAL_EVIDENCE_INVALID"
+  | "APPROVAL_ALREADY_INEFFECTIVE"
+  | "APPROVAL_NOT_EFFECTIVE"
+  | "OPERATION_NOT_FOUND"
+  | "OPERATION_ALREADY_EXISTS"
+  | "OPERATION_TASK_MISMATCH"
+  | "OPERATION_EFFECT_KEY_DUPLICATE"
+  | "OPERATION_STAGE_BINDING_MISMATCH"
+  | "OPERATION_INTENT_ALREADY_PREPARED"
+  | "OPERATION_STATE_INVALID"
+  | "OPERATION_DISPATCH_FORBIDDEN"
+  | "OPERATION_ABORT_FORBIDDEN"
+  | "OPERATION_RECONCILE_INVALID"
+  | "SCOPE_NOT_AUTHORIZED"
+  | "SEMANTIC_REF_INVALID"
+  | "INVALID_COMMAND";
+
+export interface DomainRejection {
+  readonly code: DomainRejectionCode;
+  readonly message: string;
+}
+
+export type DomainResult<T> =
+  | { readonly ok: true; readonly value: T }
+  | { readonly ok: false; readonly error: DomainRejection };
+
+export type DomainCommandResult = DomainResult<TaskAggregate>;
+
+export const ok = <T>(value: T): DomainResult<T> => ({ ok: true, value });
+
+export const reject = (code: DomainRejectionCode, message: string): DomainResult<never> => ({
+  ok: false,
+  error: { code, message },
+});

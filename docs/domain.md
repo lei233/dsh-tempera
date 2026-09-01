@@ -10,7 +10,6 @@ A small lifecycle is preferred:
 
 ```text
 active
-suspended?   // whether v1 needs this remains an implementation decision
 completed
 failed
 cancelled
@@ -122,7 +121,7 @@ A Review is immutable acceptance evidence bound to an exact Candidate.
 
 Each complete judgment creates a new Review. Historical Reviews are never overwritten.
 
-Core should normalize only a small disposition vocabulary; a likely shape is:
+Core normalizes the frozen v1 disposition vocabulary:
 
 ```text
 pass
@@ -131,7 +130,7 @@ reject
 abstain
 ```
 
-The exact enum remains open. Detailed findings live in evidence artifacts.
+Detailed findings live in evidence artifacts.
 
 DSH-based preliminary review is normally realized through an `evaluation` Stage and Invocation. Host or human review is also an `evaluation` Stage but is completed through an authorized external command rather than a fake Invocation.
 
