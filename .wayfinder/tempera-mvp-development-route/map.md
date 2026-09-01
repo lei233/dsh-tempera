@@ -18,6 +18,7 @@ The map plans the work; it does not implement the product.
 - Delivery choices fixed while charting: thin vertical slices; real transactional persistence from the first authority-changing command; TypeScript command/query API plus a thin DSH adapter; real DSH composition and real Git/workspace providers are part of the MVP; minimal DSH-native providers/plugins may live in this repository behind independent package boundaries.
 - Every slice must preserve fail-closed semantics and add its failure/race acceptance tests before the next authority layer is introduced.
 - Consult `grilling` and `domain-modeling` for HITL decisions, `prototype` when a concrete contract draft is needed, and `research` for source-driven capability or archaeology questions.
+- Ticket-type preference: resolve decisions through `grilling` or `research` whenever possible. Do not create a `prototype` ticket unless the decision genuinely depends on an interactive or concrete artifact; before creating one, pause and obtain the user's explicit approval.
 - Primary local context: `docs/architecture.md`, `docs/domain.md`, `docs/lifecycle.md`, `docs/durability.md`, `docs/capability-seams.md`, `docs/mvp.md`, and `.handoff/handoff-dsh-tempera-architecture.md`.
 - High-level architecture is settled. Do not reopen it merely to choose field names, package names, or adapter mechanics.
 
