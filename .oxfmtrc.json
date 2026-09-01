@@ -8,6 +8,7 @@
     "**/.cache/**",
     "**/.vite/**",
     "**/.vitest/**",
-    "pnpm-lock.yaml"
+    "pnpm-lock.yaml",
+    "**/**/*.md"
   ]
 }
