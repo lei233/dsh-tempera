@@ -31,6 +31,7 @@ The map plans the work; it does not implement the product.
 - [Freeze the implementable Task Domain v1 schema](tickets/003-freeze-task-domain-v1-schema.md): freeze seven provider-neutral immutable entities, a four-value Task lifecycle and Review disposition, five-state Operation coordination, scoped pure Domain commands, generation fencing, and exact-Candidate authority invariants.
 - [Choose the first transactional persistence boundary](tickets/004-choose-transactional-persistence-boundary.md): use an exclusively owned `better-sqlite3` authority store whose pure decision transaction atomically binds versioned Task snapshots, ordered authority commits, and durable idempotency receipts behind a runtime port.
 - [Fix the MVP host command and query contract](tickets/005-fix-host-command-query-contract.md): expose four named Host commands over manager-wide idempotency and Task CAS, keep runtime authority transitions internal, and provide three read-only version-reporting queries without a generic Domain-command escape hatch.
+- [Freeze the coding-default policy snapshot and continuation rules](tickets/006-freeze-coding-default-policy.md): use one closed versioned interpreter with fixed retry/repair/effect budgets, order-independent exact-Candidate two-Review eligibility, stable continuations, fail-closed apply authority, and completion only from a confirmed Operation.
 
 ## Not yet specified
 

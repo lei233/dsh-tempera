@@ -71,3 +71,7 @@ _Avoid_: Speculative retry
 **Materialization**:
 The authoritative creation of a Stage as a legal continuation under frozen policy.
 _Avoid_: Scheduling, plugin continuation
+
+**Coding-default policy**:
+The frozen finite MVP continuation policy for one coding branch, interpreted as a closed domain contract.
+_Avoid_: Workflow definition, mutable profile, workflow DSL
