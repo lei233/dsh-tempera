@@ -33,6 +33,7 @@ The map plans the work; it does not implement the product.
 - [Fix the MVP host command and query contract](tickets/005-fix-host-command-query-contract.md): expose four named Host commands over manager-wide idempotency and Task CAS, keep runtime authority transitions internal, and provide three read-only version-reporting queries without a generic Domain-command escape hatch.
 - [Freeze the coding-default policy snapshot and continuation rules](tickets/006-freeze-coding-default-policy.md): use one closed versioned interpreter with fixed retry/repair/effect budgets, order-independent exact-Candidate two-Review eligibility, stable continuations, fail-closed apply authority, and completion only from a confirmed Operation.
 - [Specify the authoritative transaction and recovery protocol](tickets/009-specify-transaction-recovery-protocol.md): separate authority and snapshot clocks, persist provider grants before calls, recover from current snapshots through stable receipts and fencing, and reconcile crossed Operations without speculative redispatch or terminal Task reopening.
+- [Freeze the DSH compatibility baseline](tickets/012-freeze-dsh-compatibility-baseline.md): pin DSH `0.1.2-alpha.3` to its reviewed release commit, enforce aligned exact packages and scoped compile/behavior profiles, and require evidence plus human approval for every developer-preview upgrade.
 
 ## Not yet specified
 
