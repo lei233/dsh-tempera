@@ -112,11 +112,17 @@ const evaluationStage = (id: StageId, candidate: CandidateId, kind: string): Sta
   kind,
   contractVersion: "1",
   materializationKey: materializationKey(`review:${kind}:${candidate}`),
-  semanticInputs: [{ name: "candidate", value: { type: "candidate", id: candidate } }],
+  semanticInputs: [
+    { name: "candidate", value: { type: "candidate", id: candidate } },
+    {
+      name: "authority-requirement",
+      value: descriptor("authority-requirement", "req:review:1"),
+    },
+  ],
   realizationRequirement: descriptor("realization-requirement", `req:${kind}:1`),
   allowedScope: scope([["repo:demo/read", ["read"]]]),
   currentExecutionGeneration: 0,
-  status: "pending",
+  status: "active",
 });
 
 const effectStage = (candidate: CandidateId, approval: ApprovalId): Stage => ({
@@ -908,6 +914,19 @@ describe("task domain v1", () => {
         command({
           type: "cancel-task",
           cancellation: descriptor("task-cancellation", "cancel:1"),
+          stageCancellations: [
+            {
+              kind: "stage-cancellation",
+              contractVersion: "1",
+              identity: "stage-cancel:1" as DescriptorIdentity,
+              value: {
+                taskCancellationIdentity: "cancel:1",
+                taskId,
+                stageId: stageId(1),
+              },
+            },
+          ],
+          operationAborts: [],
         }),
       ),
     );

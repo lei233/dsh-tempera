@@ -95,6 +95,16 @@ export interface AuthorityHistoryOptions {
   readonly limit?: number;
 }
 
+export interface ListTasksPageResult {
+  readonly items: TaskSummary[];
+  readonly nextCursor?: TaskId;
+}
+
+export interface AuthorityHistoryPageResult {
+  readonly items: AuthorityCommit[];
+  readonly nextCursor?: number;
+}
+
 export interface AuthorityStore {
   executeTaskCommand<TResult>(
     input: ExecuteTaskCommandInput<TResult>,
@@ -106,11 +116,16 @@ export interface AuthorityStore {
     afterTaskId?: string,
     limit?: number,
   ): TaskSummary[];
+  listTasksPage(options?: ListTasksOptions): ListTasksPageResult;
   getAuthorityHistory(
     taskId: TaskId,
     options?: AuthorityHistoryOptions | number,
     limit?: number,
   ): AuthorityCommit[];
+  getAuthorityHistoryPage(
+    taskId: TaskId,
+    options?: AuthorityHistoryOptions,
+  ): AuthorityHistoryPageResult;
   close(): void;
 }
 
@@ -182,6 +197,10 @@ export class SqliteAuthorityStore implements AuthorityStore {
   private readonly listTasksByStatusStatement: Database.Statement;
   private readonly listTasksAfterStatement: Database.Statement;
   private readonly listTasksByStatusAfterStatement: Database.Statement;
+  private readonly listTasksLimitStatement: Database.Statement;
+  private readonly listTasksByStatusLimitStatement: Database.Statement;
+  private readonly listTasksAfterLimitStatement: Database.Statement;
+  private readonly listTasksByStatusAfterLimitStatement: Database.Statement;
   private readonly historyStatement: Database.Statement;
   private readonly historyAfterStatement: Database.Statement;
   private readonly historyAfterLimitStatement: Database.Statement;
@@ -238,6 +257,33 @@ export class SqliteAuthorityStore implements AuthorityStore {
       FROM task_snapshots
       WHERE status = ? AND task_id > ?
       ORDER BY task_id ASC
+    `);
+    this.listTasksLimitStatement = db.prepare(`
+      SELECT task_id, status, version, aggregate_schema_version
+      FROM task_snapshots
+      ORDER BY task_id ASC
+      LIMIT ?
+    `);
+    this.listTasksByStatusLimitStatement = db.prepare(`
+      SELECT task_id, status, version, aggregate_schema_version
+      FROM task_snapshots
+      WHERE status = ?
+      ORDER BY task_id ASC
+      LIMIT ?
+    `);
+    this.listTasksAfterLimitStatement = db.prepare(`
+      SELECT task_id, status, version, aggregate_schema_version
+      FROM task_snapshots
+      WHERE task_id > ?
+      ORDER BY task_id ASC
+      LIMIT ?
+    `);
+    this.listTasksByStatusAfterLimitStatement = db.prepare(`
+      SELECT task_id, status, version, aggregate_schema_version
+      FROM task_snapshots
+      WHERE status = ? AND task_id > ?
+      ORDER BY task_id ASC
+      LIMIT ?
     `);
     this.historyStatement = db.prepare(`
       SELECT task_id, committed_version, previous_version, command_identity, facts_json
@@ -389,13 +435,22 @@ export class SqliteAuthorityStore implements AuthorityStore {
     afterTaskId?: string,
     limit?: number,
   ): TaskSummary[] {
-    this.assertOpen();
     const normalizedOptions: ListTasksOptions =
       typeof options === "string" ? { status: options as TaskStatus, afterTaskId, limit } : options;
-    const { status, afterTaskId: afterTaskIdOption, cursor } = normalizedOptions;
-    const normalizedLimit = limit ?? normalizedOptions.limit;
-    this.assertLimit(normalizedLimit);
-    const after = afterTaskIdOption ?? cursor ?? afterTaskId;
+    const mergedOptions: ListTasksOptions = {
+      ...normalizedOptions,
+      ...(afterTaskId !== undefined ? { afterTaskId } : {}),
+      ...(limit !== undefined ? { limit } : {}),
+    };
+    return this.listTasksPage(mergedOptions).items;
+  }
+
+  listTasksPage(options: ListTasksOptions = {}): ListTasksPageResult {
+    this.assertOpen();
+    const { status, afterTaskId, cursor, limit } = options;
+    this.assertLimit(limit);
+    const after = afterTaskId ?? cursor;
+    const fetchLimit = limit === undefined ? undefined : limit + 1;
 
     let rows: TaskSummaryRow[];
     if (status !== undefined) {
@@ -403,21 +458,38 @@ export class SqliteAuthorityStore implements AuthorityStore {
         throw sqliteFailure(`Invalid task status ${String(status)}`);
       }
       if (after !== undefined) {
-        rows = this.listTasksByStatusAfterStatement.all(status, after) as TaskSummaryRow[];
+        rows =
+          fetchLimit === undefined
+            ? (this.listTasksByStatusAfterStatement.all(status, after) as TaskSummaryRow[])
+            : (this.listTasksByStatusAfterLimitStatement.all(
+                status,
+                after,
+                fetchLimit,
+              ) as TaskSummaryRow[]);
       } else {
-        rows = this.listTasksByStatusStatement.all(status) as TaskSummaryRow[];
+        rows =
+          fetchLimit === undefined
+            ? (this.listTasksByStatusStatement.all(status) as TaskSummaryRow[])
+            : (this.listTasksByStatusLimitStatement.all(status, fetchLimit) as TaskSummaryRow[]);
       }
     } else if (after !== undefined) {
-      rows = this.listTasksAfterStatement.all(after) as TaskSummaryRow[];
+      rows =
+        fetchLimit === undefined
+          ? (this.listTasksAfterStatement.all(after) as TaskSummaryRow[])
+          : (this.listTasksAfterLimitStatement.all(after, fetchLimit) as TaskSummaryRow[]);
     } else {
-      rows = this.listTasksStatement.all() as TaskSummaryRow[];
+      rows =
+        fetchLimit === undefined
+          ? (this.listTasksStatement.all() as TaskSummaryRow[])
+          : (this.listTasksLimitStatement.all(fetchLimit) as TaskSummaryRow[]);
     }
 
-    if (normalizedLimit !== undefined) {
-      rows = rows.slice(0, normalizedLimit);
+    const hasMore = limit !== undefined && rows.length > limit;
+    if (hasMore) {
+      rows = rows.slice(0, limit);
     }
 
-    return rows.map((row) => {
+    const items = rows.map((row) => {
       if (row.aggregate_schema_version !== aggregateSchemaVersion) {
         throw new AuthorityStoreError(
           "CORRUPT_DATA",
@@ -437,6 +509,9 @@ export class SqliteAuthorityStore implements AuthorityStore {
         aggregateSchemaVersion: row.aggregate_schema_version,
       };
     });
+
+    const nextCursor = hasMore && items.length > 0 ? items[items.length - 1]?.taskId : undefined;
+    return { items, nextCursor };
   }
 
   getAuthorityHistory(
@@ -444,35 +519,55 @@ export class SqliteAuthorityStore implements AuthorityStore {
     options: AuthorityHistoryOptions | number = {},
     limit?: number,
   ): AuthorityCommit[] {
-    this.assertOpen();
     const normalizedOptions: AuthorityHistoryOptions =
       typeof options === "number" ? { afterCommittedVersion: options, limit } : options;
-    const { afterCommittedVersion } = normalizedOptions;
-    const normalizedLimit = limit ?? normalizedOptions.limit;
-    this.assertLimit(normalizedLimit);
+    const mergedOptions: AuthorityHistoryOptions = {
+      ...normalizedOptions,
+      ...(limit !== undefined ? { limit } : {}),
+    };
+    return this.getAuthorityHistoryPage(taskId, mergedOptions).items;
+  }
+
+  getAuthorityHistoryPage(
+    taskId: TaskId,
+    options: AuthorityHistoryOptions = {},
+  ): AuthorityHistoryPageResult {
+    this.assertOpen();
+    const { afterCommittedVersion, limit } = options;
+    this.assertLimit(limit);
+    const fetchLimit = limit === undefined ? undefined : limit + 1;
 
     let rows: JournalRow[];
-    if (afterCommittedVersion !== undefined && normalizedLimit !== undefined) {
+    if (afterCommittedVersion !== undefined && fetchLimit !== undefined) {
       rows = this.historyAfterLimitStatement.all(
         taskId,
         afterCommittedVersion,
-        normalizedLimit,
+        fetchLimit,
       ) as JournalRow[];
     } else if (afterCommittedVersion !== undefined) {
       rows = this.historyAfterStatement.all(taskId, afterCommittedVersion) as JournalRow[];
-    } else if (normalizedLimit !== undefined) {
-      rows = this.historyLimitStatement.all(taskId, normalizedLimit) as JournalRow[];
+    } else if (fetchLimit !== undefined) {
+      rows = this.historyLimitStatement.all(taskId, fetchLimit) as JournalRow[];
     } else {
       rows = this.historyStatement.all(taskId) as JournalRow[];
     }
 
-    return rows.map((row) => ({
+    const hasMore = limit !== undefined && rows.length > limit;
+    if (hasMore) {
+      rows = rows.slice(0, limit);
+    }
+
+    const items = rows.map((row) => ({
       taskId: row.task_id as TaskId,
       committedVersion: row.committed_version,
       previousVersion: row.previous_version,
       commandIdentity: row.command_identity,
       facts: this.decodeFacts(row.facts_json),
     }));
+
+    const nextCursor =
+      hasMore && items.length > 0 ? items[items.length - 1]?.committedVersion : undefined;
+    return { items, nextCursor };
   }
 
   close(): void {

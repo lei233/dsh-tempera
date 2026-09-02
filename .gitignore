@@ -1,4 +1,5 @@
 .handoff
+.execution
 node_modules/
 dist/
 coverage/

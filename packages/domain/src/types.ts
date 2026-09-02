@@ -322,6 +322,8 @@ export type AuthorityCommand =
   | {
       readonly type: "cancel-task";
       readonly cancellation: FrozenDescriptor<"task-cancellation">;
+      readonly stageCancellations: readonly FrozenDescriptor<"stage-cancellation">[];
+      readonly operationAborts: readonly FrozenDescriptor<"operation-abort">[];
     };
 
 export type ObservationCommand =

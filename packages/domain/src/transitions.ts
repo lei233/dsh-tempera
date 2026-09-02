@@ -6,10 +6,12 @@ import {
   getSemanticRefsByType,
   hasOpenStages,
   isApprovalEffective,
+  isObject,
   isScopeRefAuthorized,
   isScopeWithin,
   reviewExists,
   approvalExists,
+  deepEqual,
 } from "./internal";
 import { reject, type DomainResult, type DomainRejectionCode } from "./result";
 import type {
@@ -18,6 +20,7 @@ import type {
   AuthorityCommand,
   Candidate,
   DomainCommand,
+  FrozenDescriptor,
   Invocation,
   Operation,
   Review,
@@ -86,6 +89,20 @@ export const createTask = (task: ActiveTask): TaskAggregate => ({
   operations: {},
   authority: { ineffectiveApprovalIds: [] },
 });
+
+const getUniqueAuthorityRequirement = (
+  stage: Stage,
+): FrozenDescriptor<"authority-requirement"> | undefined => {
+  const requirements = stage.semanticInputs.filter((input) => {
+    if (!isObject(input.value)) {
+      return false;
+    }
+    return (input.value as { readonly kind?: unknown }).kind === "authority-requirement";
+  });
+  return requirements.length === 1
+    ? (requirements[0].value as FrozenDescriptor<"authority-requirement">)
+    : undefined;
+};
 
 const materializeStage = (
   aggregate: TaskAggregate,
@@ -653,10 +670,10 @@ const submitExternalReview = (
       `External review ${review.id} can only complete an evaluation stage.`,
     );
   }
-  if (stage.status === "completed" || stage.status === "failed" || stage.status === "cancelled") {
+  if (stage.status !== "active") {
     return authorityError(
-      "STAGE_ALREADY_COMPLETED",
-      `Stage ${stage.id} is already closed; a new external review cannot overwrite it.`,
+      "STAGE_NOT_ACTIVE",
+      `Stage ${stage.id} must be active before an external review can complete it.`,
     );
   }
   if (review.decisionProvenance.kind !== "actor") {
@@ -676,6 +693,19 @@ const submitExternalReview = (
     return authorityError(
       "CANDIDATE_NOT_FOUND",
       `Review ${review.id} references unknown candidate ${review.candidateId}.`,
+    );
+  }
+  const authorityRequirement = getUniqueAuthorityRequirement(stage);
+  if (!authorityRequirement) {
+    return authorityError(
+      "REVIEW_TARGET_MISMATCH",
+      `Review ${review.id} target stage ${stage.id} must freeze exactly one authority-requirement descriptor.`,
+    );
+  }
+  if (!deepEqual(review.authorityRequirement, authorityRequirement)) {
+    return authorityError(
+      "REVIEW_AUTHORITY_REQUIREMENT_MISMATCH",
+      `Review ${review.id} authority requirement does not match the unique frozen requirement on stage ${stage.id}.`,
     );
   }
   if (review.evidence.length === 0) {
@@ -1210,19 +1240,119 @@ const cancelTask = (
     );
   }
 
+  const openStages = Object.values(aggregate.stages).filter(
+    (stage) => stage.status === "pending" || stage.status === "active",
+  );
+  const preparedOperations = Object.values(aggregate.operations).filter(
+    (operation) => operation.status === "prepared",
+  );
+
+  const stageCancellations = command.stageCancellations;
+  if (stageCancellations.length !== openStages.length) {
+    return authorityError(
+      "INVALID_COMMAND",
+      `Task cancellation requires one stage-cancellation descriptor for each open stage (${openStages.length}), got ${stageCancellations.length}.`,
+    );
+  }
+  const stageIds = new Set(openStages.map((stage) => stage.id));
+  for (const descriptor of stageCancellations) {
+    const target = descriptor.value.stageId as string | undefined;
+    if (
+      typeof target !== "string" ||
+      !stageIds.has(target as Stage["id"]) ||
+      descriptor.value.taskId !== aggregate.task.id ||
+      descriptor.value.taskCancellationIdentity !== command.cancellation.identity
+    ) {
+      return authorityError(
+        "INVALID_COMMAND",
+        `Task cancellation stage descriptor for ${target ?? "unknown"} does not match the current open stage set or cancellation identity.`,
+      );
+    }
+  }
+  if (
+    new Set(stageCancellations.map((descriptor) => descriptor.value.stageId as string)).size !==
+    stageCancellations.length
+  ) {
+    return authorityError(
+      "INVALID_COMMAND",
+      "Task cancellation stage descriptors must not contain duplicates.",
+    );
+  }
+
+  const operationAborts = command.operationAborts;
+  if (operationAborts.length !== preparedOperations.length) {
+    return authorityError(
+      "INVALID_COMMAND",
+      `Task cancellation requires one operation-abort descriptor for each prepared operation (${preparedOperations.length}), got ${operationAborts.length}.`,
+    );
+  }
+  const operationIds = new Set(preparedOperations.map((operation) => operation.id));
+  for (const descriptor of operationAborts) {
+    const target = descriptor.value.operationId as string | undefined;
+    if (
+      typeof target !== "string" ||
+      !operationIds.has(target as Operation["id"]) ||
+      descriptor.value.taskId !== aggregate.task.id ||
+      descriptor.value.taskCancellationIdentity !== command.cancellation.identity
+    ) {
+      return authorityError(
+        "INVALID_COMMAND",
+        `Task cancellation operation descriptor for ${target ?? "unknown"} does not match the current prepared operation set or cancellation identity.`,
+      );
+    }
+  }
+  if (
+    new Set(operationAborts.map((descriptor) => descriptor.value.operationId as string)).size !==
+    operationAborts.length
+  ) {
+    return authorityError(
+      "INVALID_COMMAND",
+      "Task cancellation operation descriptors must not contain duplicates.",
+    );
+  }
+
   const next = clone(aggregate);
   const stages = Object.fromEntries(
-    Object.values(next.stages).map((stage) => [
-      stage.id,
-      stage.status === "pending" || stage.status === "active"
-        ? {
-            ...(next.stages[stage.id] as Stage),
-            currentExecutionGeneration: stage.currentExecutionGeneration + 1,
-          }
-        : stage,
-    ]),
+    Object.values(next.stages).map((stage) => {
+      if (stage.status !== "pending" && stage.status !== "active") {
+        return [stage.id, stage];
+      }
+      const cancellation = stageCancellations.find(
+        (descriptor) => descriptor.value.stageId === stage.id,
+      );
+      return [
+        stage.id,
+        {
+          ...(next.stages[stage.id] as Stage),
+          status: "cancelled",
+          cancellation: cancellation as FrozenDescriptor<"stage-cancellation">,
+          currentExecutionGeneration: stage.currentExecutionGeneration + 1,
+        },
+      ];
+    }),
   ) as TaskAggregate["stages"];
   next.stages = stages;
+
+  const operations = Object.fromEntries(
+    Object.values(next.operations).map((operation) => {
+      if (operation.status !== "prepared") {
+        return [operation.id, operation];
+      }
+      const abortReason = operationAborts.find(
+        (descriptor) => descriptor.value.operationId === operation.id,
+      );
+      return [
+        operation.id,
+        {
+          ...(next.operations[operation.id] as Operation),
+          status: "aborted",
+          abortReason: abortReason as FrozenDescriptor<"operation-abort">,
+        },
+      ];
+    }),
+  ) as TaskAggregate["operations"];
+  next.operations = operations;
+
   next.task = {
     ...next.task,
     status: "cancelled",
