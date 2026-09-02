@@ -15,6 +15,7 @@ An Execution Spec is the executor's complete task interface, not a description o
 
 - Produce one primary artifact titled exactly `# Execution Spec`.
 - Keep the artifact executor-agnostic. Do not make it depend on a specific executor, provider, agent framework, or realization mechanism.
+- Write the executor-facing body in the language used by the user's task request. Keep the contract title and section headings in English, and preserve technical/domain terms, identifiers, paths, commands, and established project vocabulary in English or their original spelling.
 - Do not ask the executor to discover, invoke, or understand host-side Skills, context systems, planning tools, approval mechanics, or provenance.
 - Normalize relevant guidance from project docs, repository instructions, specifications, Skills, research, and host planning into direct task-native `Requirements` or fixed `Decisions`.
 - Include only working context the executor genuinely needs to inspect while performing the task.
@@ -42,7 +43,7 @@ Read both references when generating an Execution Spec:
 | Reference | Purpose |
 | --- | --- |
 | `references/context-compilation.md` | Select, resolve, strip, and normalize host-side context into executor-usable instructions. |
-| `references/spec-contract.md` | Defines the v1 section contract, section semantics, forbidden leakage, and final audit. |
+| `references/spec-contract.md` | Defines the v1 section contract, section semantics, language rules, forbidden leakage, and final audit. |
 
 Do not invent additional executor-facing sections outside the defined contract.
 
