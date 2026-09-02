@@ -84,9 +84,11 @@ Prefer exact files, directories, issue/spec artifacts, or other materials with a
 
 Before editing, inspect:
 
-- `packages/domain/src/types.ts` — defines the affected Domain types.
-- `packages/domain/src/transitions.ts` — contains the invariants this change must preserve.
+- `src/api/validation.ts` — contains the validation path this task extends.
+- `tests/api/validation.test.ts` — establishes the current externally observable behavior.
 ```
+
+`Context` is not an exhaustive list of every file the executor may inspect. It identifies important working anchors known to the host; ordinary in-scope code navigation remains part of execution.
 
 Do not use `Context` as a shortcut for asking the executor to reconstruct host planning. Do not list meta-context such as Skills, planning notes, architecture handoffs, or repository-wide documentation when the host can compile the relevant rule directly into `Requirements`.
 
@@ -99,16 +101,11 @@ Requirements are task-native. They may originate from user instructions, reposit
 Prefer direct statements such as:
 
 ```markdown
-- Keep `@dsh-tempera/domain` independent of runtime and DSH-specific dependencies.
-- Test externally observable behavior rather than implementation details.
+- Preserve the existing public API unless the task explicitly requires a breaking change.
+- Cover the new behavior with tests that verify externally observable outcomes.
 ```
 
-Do not write provenance-oriented labels such as:
-
-- `Project constraint:`
-- `Skill rule:`
-- `Compiled project constraint:`
-- `Compiled Skill rule:`
+Do not write provenance-oriented labels such as `Project constraint:` or `Skill rule:`. State the resolved rule directly.
 
 If a requirement would be ambiguous without a concrete implementation choice, resolve that choice host-side and record it in `Requirements` or `Decisions`.
 
@@ -135,8 +132,8 @@ Good examples:
 ```markdown
 ## Decisions
 
-- Extend the existing `FrozenDescriptor` abstraction; do not introduce a new top-level Domain entity.
-- Keep this responsibility in `@dsh-tempera/runtime`; do not move it into Domain.
+- Reuse the existing request-validation path rather than introducing a parallel validation pipeline.
+- Preserve backward compatibility for the current configuration format.
 ```
 
 Do not use `Decisions` for:
@@ -178,13 +175,13 @@ Do not ask for a reconstruction of planner reasoning, Skill usage, provenance, o
 The executor-facing artifact should normally not contain:
 
 - Skill provenance or instructions to invoke Skills;
-- `Compiled Skill Rules` or `Compiled Project Constraints` sections;
+- provenance-oriented sections or source-by-source rule classifications;
 - context provenance or source-by-source manifests;
-- Wayfinder or another host planning mechanism unless the task itself directly operates on it;
+- host planning mechanisms unless the task itself directly operates on them;
 - planner reasoning, alternatives, or chain-of-thought;
 - host tool calls or unavailable-tool workflows;
 - host approval mechanics or execution permissions;
-- context reports, Skill reports, source summaries, compilation reports, or reasoning appendices;
+- context-compilation reports, manifests, source summaries, or reasoning appendices;
 - generic project meta-context that has already been normalized into direct requirements;
 - executor-specific launcher mechanics unless they are genuinely part of the task being executed.
 
@@ -195,7 +192,7 @@ Before delivering the artifact, verify all of the following:
 1. The title is exactly `# Execution Spec`.
 2. Every required section is present and substantive.
 3. Empty optional sections and placeholder values are absent.
-4. The task can be executed from this spec plus only the working materials explicitly named in `Context`.
+4. The executor can understand the task, its boundaries, and its required behavior without reconstructing host-side context. `Context` identifies important working anchors, not an exhaustive read allowlist; additional in-scope code exploration is allowed when needed for implementation or verification.
 5. Material conflicts and implementation choices have been resolved rather than delegated back to the executor.
 6. Requirements are task-native and do not require the executor to understand their provenance.
 7. Stop conditions are narrow and semantically meaningful.
