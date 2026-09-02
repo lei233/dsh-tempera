@@ -74,7 +74,7 @@ Use explicit task authority and the applicable project's own precedence rules wh
 
 Do not preserve competing instructions in the final spec and ask the executor to choose between them.
 
-If a conflict cannot be resolved without changing task semantics, violating an architectural boundary, or inventing missing authority, emit a narrow `Stop Conditions` trigger or stop before producing an underspecified spec.
+If a material conflict is already known and cannot be resolved without changing task semantics, violating an architectural boundary, or inventing missing authority, do not produce an underspecified Execution Spec. `Stop Conditions` are reserved for contingent facts that can only be established during execution.
 
 ## 6. Make Required Planning Decisions
 
@@ -110,6 +110,8 @@ into direct instructions such as:
 - Test externally observable behavior rather than implementation details.
 ```
 
+When the user's task request is not in English, translate the surrounding executor-facing prose into the user's language while preserving technical/domain terms, identifiers, paths, commands, and established project vocabulary in English or their original spelling.
+
 Preserve provenance only when the executor operationally needs it, for example when a task explicitly requires editing or reconciling a named specification or when a source must be cited in an externally governed deliverable.
 
 ## 8. Choose Executor-Readable Working Context
@@ -143,14 +145,14 @@ The host should name important working anchors it already knows are material to 
 
 The host should absorb normal uncertainty and clarification work before execution.
 
-Use a stop condition only if new information encountered during execution could force a semantically different task or make correctness unverifiable. Examples:
+Use a stop condition only if a relevant fact can be established only during execution and the resulting new information could force a semantically different task or make correctness unverifiable. Examples:
 
 - an abstraction named in a fixed decision does not exist on the actual target branch;
-- the required change would violate an explicit package or dependency boundary;
+- the required change would violate an explicit package or dependency boundary discovered during implementation;
 - a requested migration cannot preserve an explicit compatibility requirement;
 - the specified verification command is unavailable and no equivalent check can demonstrate the acceptance criteria.
 
-Do not use generic stop conditions for routine implementation judgment.
+Do not use generic stop conditions for routine implementation judgment or for material conflicts the host already knows about before execution.
 
 ## 11. Perform the Sufficiency/Noise Audit
 
