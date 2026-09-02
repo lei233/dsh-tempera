@@ -56,6 +56,14 @@ Optional sections:
 
 Never emit an empty optional section or a placeholder such as `None`, `N/A`, or `Not applicable`.
 
+## Language
+
+Write the prose and list content of the Execution Spec in the language used by the user's task request. If the request materially mixes languages, use the dominant natural language unless the user explicitly requests another language.
+
+Keep the contract title and section headings exactly as defined above in English.
+
+Preserve technical/domain terms, identifiers, API and type names, package names, file paths, commands, configuration keys, and established project vocabulary in English or their original spelling. Translate the surrounding prose rather than replacing precise implementation terminology with localized substitutes.
+
 ## Objective
 
 State one bounded outcome in executor-facing language. Describe what must become true, not how the host discovered the task.
@@ -148,7 +156,7 @@ Uncertainty that materially affects semantics should be resolved before executio
 
 ## Stop Conditions
 
-Use `Stop Conditions` only when proceeding by guesswork could:
+Use `Stop Conditions` only for contingent conditions whose relevant facts can be established only during execution and where proceeding by guesswork could:
 
 - alter task semantics;
 - violate an architectural or scope boundary; or
@@ -156,7 +164,7 @@ Use `Stop Conditions` only when proceeding by guesswork could:
 
 Write concrete triggers. Do not add generic instructions such as `ask if unsure`, `be careful`, or `stop on any ambiguity`.
 
-The host should resolve ordinary ambiguity before emitting the spec.
+A material conflict already known to the host must be resolved before emitting the spec; do not encode a known unresolved conflict as a `Stop Condition`.
 
 ## Completion Report
 
@@ -189,12 +197,13 @@ The executor-facing artifact should normally not contain:
 
 Before delivering the artifact, verify all of the following:
 
-1. The title is exactly `# Execution Spec`.
-2. Every required section is present and substantive.
-3. Empty optional sections and placeholder values are absent.
-4. The executor can understand the task, its boundaries, and its required behavior without reconstructing host-side context. `Context` identifies important working anchors, not an exhaustive read allowlist; additional in-scope code exploration is allowed when needed for implementation or verification.
-5. Material conflicts and implementation choices have been resolved rather than delegated back to the executor.
-6. Requirements are task-native and do not require the executor to understand their provenance.
-7. Stop conditions are narrow and semantically meaningful.
-8. The artifact contains one primary task interface, not companion planning or compilation reports.
-9. If removing a passage would not change how a competent executor should perform or verify the task, remove it.
+1. The title is exactly `# Execution Spec`, and the section headings follow the defined English contract.
+2. The body uses the language of the user's task request while preserving technical/domain terms and implementation identifiers in English or their original spelling.
+3. Every required section is present and substantive.
+4. Empty optional sections and placeholder values are absent.
+5. The executor can understand the task, its boundaries, and its required behavior without reconstructing host-side context. `Context` identifies important working anchors, not an exhaustive read allowlist; additional in-scope code exploration is allowed when needed for implementation or verification.
+6. Material conflicts and implementation choices have been resolved rather than delegated back to the executor.
+7. Requirements are task-native and do not require the executor to understand their provenance.
+8. Stop conditions are limited to contingent execution-time facts and are narrow and semantically meaningful.
+9. The artifact contains one primary task interface, not companion planning or compilation reports.
+10. If removing a passage would not change how a competent executor should perform or verify the task, remove it.
