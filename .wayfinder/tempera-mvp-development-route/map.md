@@ -34,11 +34,11 @@ The map plans the work; it does not implement the product.
 - [Freeze the coding-default policy snapshot and continuation rules](tickets/006-freeze-coding-default-policy.md): use one closed versioned interpreter with fixed retry/repair/effect budgets, order-independent exact-Candidate two-Review eligibility, stable continuations, fail-closed apply authority, and completion only from a confirmed Operation.
 - [Specify the authoritative transaction and recovery protocol](tickets/009-specify-transaction-recovery-protocol.md): separate authority and snapshot clocks, persist provider grants before calls, recover from current snapshots through stable receipts and fencing, and reconcile crossed Operations without speculative redispatch or terminal Task reopening.
 - [Freeze the DSH compatibility baseline](tickets/012-freeze-dsh-compatibility-baseline.md): pin DSH `0.1.2-alpha.3` to its reviewed release commit, enforce aligned exact packages and scoped compile/behavior profiles, and require evidence plus human approval for every developer-preview upgrade.
+- [Define the DSH-native service and plugin boundaries](tickets/007-define-dsh-service-boundaries.md): expose one narrow `ctx.tempera` Host service over four typed capability registries, deterministic frozen bindings, one-shot DSH adaptation, immutable proposal custody, and exact-intent effects without granting providers Task authority.
 
 ## Not yet specified
 
-- The concrete first realizer/provider composition used by the golden path. This becomes specifiable after current DSH capabilities and DSH-native service boundaries are known.
-- The exact repository/package layout for adapters, plugins, fixtures, and conformance tests. This becomes specifiable after their contracts and reuse boundaries are decided.
+- The exact repository/package layout for adapters, plugins, fixtures, and conformance tests. This becomes specifiable after the concrete Candidate/effect contracts and first realizer/provider dependencies are decided.
 
 ## Out of scope
 
