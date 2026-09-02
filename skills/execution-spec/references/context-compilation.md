@@ -35,7 +35,17 @@ Confirm facts such as:
 
 Prefer current repository facts over outdated summaries when they conflict.
 
-## 3. Read Applicable Skills Host-Side
+## 3. Verify Material Facts
+
+Verify material facts before encoding them as `Requirements` or `Decisions`.
+
+Do not convert unresolved factual assumptions into fixed executor instructions. Distinguish between a planning choice the host is authorized and informed enough to make and a factual claim about the target that has not been established.
+
+If a material fact cannot be established before execution, resolve it host-side when possible. When the fact can only be established during execution, encode only the narrow execution-time condition needed to detect it rather than presenting the assumption as settled.
+
+For example, `Reuse the existing validation pipeline` can be a fixed decision only after the host has established that the relevant pipeline exists and is applicable to the task.
+
+## 4. Read Applicable Skills Host-Side
 
 The host may use other Skills to plan or constrain implementation. Read those Skills before emitting the Execution Spec when they apply.
 
@@ -50,7 +60,7 @@ Extract only guidance the executor can directly act on for this task. Remove:
 
 Never tell the executor to invoke the original host-side Skill merely to recover implementation guidance the host could have compiled.
 
-## 4. Resolve Conflicts Before Execution
+## 5. Resolve Conflicts Before Execution
 
 Resolve material conflicts before writing the spec whenever possible.
 
@@ -66,7 +76,7 @@ Do not preserve competing instructions in the final spec and ask the executor to
 
 If a conflict cannot be resolved without changing task semantics, violating an architectural boundary, or inventing missing authority, emit a narrow `Stop Conditions` trigger or stop before producing an underspecified spec.
 
-## 5. Make Required Planning Decisions
+## 6. Make Required Planning Decisions
 
 Resolve non-trivial choices that the executor should not have to rediscover when the host already has enough information to decide them.
 
@@ -82,27 +92,27 @@ Encode the result as a direct `Requirement` or, when clearer as a fixed choice, 
 
 Do not include the alternatives considered or the reasoning history that led to the choice.
 
-## 6. Normalize Guidance Into Task-Native Instructions
+## 7. Normalize Guidance Into Task-Native Instructions
 
 Requirements should describe what is true for the task, not where the rule came from.
 
 Convert source-specific guidance such as:
 
 ```text
-Architecture doc: Domain must not depend on Runtime.
-Testing Skill: Prefer externally observable behavior.
+Project instruction: Existing public APIs must remain backward compatible.
+Testing guidance: Prefer externally observable behavior.
 ```
 
 into direct instructions such as:
 
 ```markdown
-- Keep `@dsh-tempera/domain` independent of runtime and DSH-specific dependencies.
+- Preserve backward compatibility for existing public APIs.
 - Test externally observable behavior rather than implementation details.
 ```
 
 Preserve provenance only when the executor operationally needs it, for example when a task explicitly requires editing or reconciling a named specification or when a source must be cited in an externally governed deliverable.
 
-## 7. Choose Executor-Readable Working Context
+## 8. Choose Executor-Readable Working Context
 
 The optional `Context` section is for materials the executor must genuinely inspect while doing the work.
 
@@ -117,30 +127,32 @@ For each item, explain briefly why it matters.
 
 Do not list meta-context merely to avoid compiling it. In particular, do not make the executor reread broad files such as `CONTEXT.md`, architecture overviews, planning artifacts, or Skills when the relevant requirements can be stated directly.
 
+`Context` identifies important working anchors known to the host; it is not an exhaustive read allowlist. The executor may discover and inspect additional in-scope implementation files as part of ordinary code navigation.
+
 A useful test is: if the executor only needs one rule from a source, inline the resolved rule; if the executor needs to inspect the source's concrete code/data/details while editing, list it in `Context`.
 
-## 8. Keep the Spec Self-Contained Without Dumping Context
+## 9. Keep the Spec Self-Contained Without Dumping Context
 
 Self-contained means the executor does not need the host's hidden planning context to understand the task.
 
 It does not mean embedding the entire repository, every source document, or all applicable Skills into the prompt.
 
-The executor may inspect source files that are genuinely necessary to perform the task. The host should name those working materials and compile everything else into direct requirements.
+The host should name important working anchors it already knows are material to the task and compile host-side context into direct requirements. The executor may discover and inspect additional in-scope implementation files as part of ordinary execution work.
 
-## 9. Bound Stop Conditions
+## 10. Bound Stop Conditions
 
 The host should absorb normal uncertainty and clarification work before execution.
 
 Use a stop condition only if new information encountered during execution could force a semantically different task or make correctness unverifiable. Examples:
 
-- the existing abstraction named in a fixed decision does not exist on the actual target branch;
-- the required storage change would force a forbidden dependency from Domain to Runtime;
-- a migration cannot be made backward compatible despite an explicit compatibility requirement;
+- an abstraction named in a fixed decision does not exist on the actual target branch;
+- the required change would violate an explicit package or dependency boundary;
+- a requested migration cannot preserve an explicit compatibility requirement;
 - the specified verification command is unavailable and no equivalent check can demonstrate the acceptance criteria.
 
 Do not use generic stop conditions for routine implementation judgment.
 
-## 10. Perform the Sufficiency/Noise Audit
+## 11. Perform the Sufficiency/Noise Audit
 
 Before handing the spec to an executor, ask two questions for every important instruction:
 
